@@ -1,5 +1,5 @@
 {
-  "name": "not_rusty_frontend",
+  "name": "motomoto_frontend",
   "version": "0.2.0",
   "description": "Internet Computer starter application",
   "keywords": [
@@ -9,12 +9,12 @@
     "Canister"
   ],
   "scripts": {
-    "build": "webpack",
+    "build": "cd src/motomoto_frontend && npm run build",
     "prebuild": "dfx generate",
-    "start": "webpack serve --mode development --env development",
+    "start": "cd src/motomoto_frontend && npm run start",
     "deploy:local": "dfx deploy --network=local",
     "deploy:ic": "dfx deploy --network=ic",
-    "generate": "dfx generate not_rusty_backend"
+    "generate": "dfx generate motomoto_backend"
   },
   "dependencies": {
     "@dfinity/agent": "^1.0.0",

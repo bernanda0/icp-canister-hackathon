@@ -1,4 +1,0 @@
-[workspace]
-members = [
-    "src/not_rusty_backend",
-]
