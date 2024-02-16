@@ -7,7 +7,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-const frontendDirectory = "rust_test_hello_frontend";
+const frontendDirectory = "not_rusty_frontend";
 
 const frontend_entry = path.join("src", frontendDirectory, "src", "index.html");
 

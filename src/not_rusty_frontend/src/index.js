@@ -1,4 +1,4 @@
-import { rust_test_hello_backend } from "../../declarations/rust_test_hello_backend";
+import { not_rusty_backend } from "../../declarations/not_rusty_backend";
 
 document.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -9,7 +9,7 @@ document.querySelector("form").addEventListener("submit", async (e) => {
   button.setAttribute("disabled", true);
 
   // Interact with foo actor, calling the greet method
-  const greeting = await rust_test_hello_backend.greet(name);
+  const greeting = await not_rusty_backend.greet(name);
 
   button.removeAttribute("disabled");
 
