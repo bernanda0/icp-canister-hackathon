@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "rust_test_hello_backend": {
+      "main": "src/rust_test_hello_backend/main.mo",
+      "type": "motoko"
+    },
+    "rust_test_hello_frontend": {
+      "dependencies": [
+        "rust_test_hello_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/rust_test_hello_frontend/src/index.html"
+      },
+      "source": [
+        "src/rust_test_hello_frontend/assets",
+        "dist/rust_test_hello_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
