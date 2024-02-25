@@ -1,12 +1,22 @@
 {
   "canisters": {
-    "motomoto_backend": {
+    "testing": {
       "main": "src/motomoto_backend/main.mo",
       "type": "motoko"
     },
+    "pub": {
+      "type": "motoko",
+      "main": "src/motomoto_backend/pub/main.mo"
+    },
+    "sub": {
+      "type": "motoko",
+      "main": "src/motomoto_backend/sub/main.mo"
+    },
     "motomoto_frontend": {
       "dependencies": [
-        "motomoto_backend"
+        "testing",
+        "pub",
+        "sub"
       ],
       "frontend": {
         "entrypoint": "src/omnia_main_frontend/build/index.html"
@@ -19,8 +29,7 @@
   },
   "defaults": {
     "build": {
-      "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",

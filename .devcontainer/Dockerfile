@@ -14,6 +14,8 @@ RUN sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 # and add new steps after this one
 RUN cargo install ic-cdk-optimizer
 
+RUN npm i -g ic-mops
+
 # install wasm32-unknown-unknown
 # https://internetcomputer.org/docs/current/developer-docs/build/cdks/cdk-rs-dfinity/rust-quickstart#register-build-and-deploy-your-project
 RUN rustup target add wasm32-unknown-unknown
