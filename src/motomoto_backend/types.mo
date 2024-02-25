@@ -2,8 +2,37 @@ import Time "mo:base/Time";
 import Result "mo:base/Result";
 import List "mo:base/List";
 import Bool "mo:base/Bool";
+import Float "mo:base/Float";
+import Principal "mo:base/Principal";
+import Hash "mo:base/Hash";
 
 module {
+    public type UserData = {
+        user_id : Principal.Principal;
+        hashed_password : Hash.Hash;
+        is_admin : Bool;
+        wallet: Wallet;
+    };
+
+    type Wallet = {
+        // wallet id is the public key
+        wallet_id : Text;
+        balance : Float;
+    };
+
+    public type UpdateUserParam = {
+        wallet : Wallet;
+    };
+
+    // public type SessionId = Principal.Principal;
+
+    public type Session = {
+        created_at : Time.Time;
+        expired_at : Time.Time;
+    };
+
+    public let OneDay = 86400000000000;
+
     public type BaggageData = {
         baggage_id : Text;
         // owner is the user_id

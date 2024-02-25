@@ -1,5 +1,9 @@
 {
   "canisters": {
+    "auth": {
+      "type": "motoko",
+      "main": "src/motomoto_backend/auth/main.mo"
+    },
     "pubsub": {
       "type": "motoko",
       "main": "src/motomoto_backend/pubsub/main.mo"
@@ -8,8 +12,13 @@
       "type": "motoko",
       "main": "src/motomoto_backend/db/main.mo"
     },
+    "internet_identity" : {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
     "motomoto_frontend": {
       "dependencies": [
+        "auth",
         "pubsub",
         "db"
       ],

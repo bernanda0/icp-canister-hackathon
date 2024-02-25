@@ -6,10 +6,12 @@ import Text "mo:base/Text";
 import Option "mo:base/Option";
 import Buffer "mo:base/Buffer";
 import Bool "mo:base/Bool";
+import Principal "mo:base/Principal";
 import Map "mo:map/Map";
 import tp "../types";
 import ut "../utils";
 import DB "canister:db";
+import auth "canister:auth";
 
 actor PubSub {
   stable var subscribers = Map.new<Text, tp.Ls<tp.BaggageReference>>();
@@ -70,16 +72,29 @@ actor PubSub {
   };
 
   public func init(userId : Text, baggageId : Text) {
-    subscribe(
-      userId,
-      {
-        baggage_id = baggageId;
-        callback = DB.updateBaggageEvent;
-      },
-    );
+    var ok = await auth.isAuth(userId);
+    if (not ok) {
+      return ();
+    };
+
+    var ok2 = await DB.getBaggageData(userId, { baggage_id = baggageId });
+    switch (ok2) {
+      case (#ok(data)) {
+        subscribe(
+          userId,
+          {
+            baggage_id = baggageId;
+            callback = DB.updateBaggageEvent;
+          },
+        );
+      };
+      case (#err(err)) {
+        return ();
+      }
+    };
   };
 
-  public query func getSubscribedBag(userId : Text) : async [Text] {
+  public shared query func getSubscribedBag(userId : Text) : async [Text] {
     let subscribed_baggages = Map.get(subscribers, Map.thash, userId);
     switch (subscribed_baggages) {
       case (?cry) {
@@ -100,13 +115,13 @@ actor PubSub {
   // reset pub sub data
   public func resetSubscriberData() : async Text {
     subscribers := Map.new<Text, tp.Ls<tp.BaggageReference>>();
-    return debug_show("Subs data reset");
+    return debug_show ("Subs data reset");
   };
 
   // reset pub sub data
   public func resetLookUp() : async Text {
     lookup_subbag := Map.new<Text, Null>();
-    return debug_show("Lookup data reset");
+    return debug_show ("Lookup data reset");
   };
 
 };

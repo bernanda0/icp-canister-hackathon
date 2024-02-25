@@ -54,6 +54,9 @@ actor DB {
         var baggageData = Map.get(baggage_data, ut.khash, key);
         switch (baggageData) {
             case (?myDt) {
+                if (myDt.owner != userId) {
+                    return #err("You are not the owner of this baggage.");
+                };
                 return #ok(myDt);
             };
             case null {
