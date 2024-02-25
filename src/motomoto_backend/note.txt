@@ -25,4 +25,6 @@
    // TODO : add user_id param to authenticate the user_id
    it's polling the API :'''') maybe every 10 seconds?
 
-6. 
+6. Connect to googlemaps, calling WA api
+
+7. TODO : unsubscribe

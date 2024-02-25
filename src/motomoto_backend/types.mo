@@ -8,17 +8,35 @@ module {
         baggage_id : Text;
         // owner is the user_id
         owner : Text;
-        destination : Text;
+        departure : Airport;
+        destination : Airport;
+        airline : Text;
         weight : Nat;
-        status : BaggageStatus;
-        event : [BaggageEvent];
+        dimension : Dimension;
+        category : Text;
+        is_fragile : Bool;
+        events : [BaggageEvent];
     };
 
     public type BaggageStatus = { #CheckIn; #InTransit; #Delivered; #Lost };
 
     public type BaggageEvent = {
-        event : Text;
+        status : BaggageStatus;
+        description : Text;
         timestamp : Time.Time;
+        photo : Text;
+        location : Airport;
+    };
+
+    type Airport = {
+        code : Text;
+        name : Text;
+    };
+
+    type Dimension = {
+        x : Nat;
+        y : Nat;
+        z : Nat;
     };
 
     public type BaggageMapKey = {
@@ -34,7 +52,7 @@ module {
     };
 
     public type UpdatePayload = {
-        b_status : BaggageStatus;
+        // b_status : BaggageStatus;
         b_event : BaggageEvent;
     };
 

@@ -16,7 +16,6 @@ actor PubSub {
   stable var lookup_subbag = Map.new<Text, Null>();
 
   public func subscribe(userId : Text, baggageRef : tp.BaggageReference) {
-    // TODO : check if the baggage ref exists 
     var baggageIdExist = await DB.bagIdExists(baggageRef.baggage_id);
     if (not baggageIdExist) {
       return ();

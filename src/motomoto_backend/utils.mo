@@ -14,13 +14,4 @@ module {
     };
 
     public let khash = (hashBaggageMapKey, keyAreEqual) : Map.HashUtils<tp.BaggageMapKey>;
-
-    public let NullBaggage : tp.BaggageData = {
-        baggage_id = "";
-        owner = "";
-        destination = "";
-        weight = 0;
-        status = #Lost;
-        event = [];
-    };
 };

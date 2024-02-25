@@ -7,6 +7,7 @@ import Buffer "mo:base/Buffer";
 
 actor DB {
     stable var baggage_data = Map.new<tp.BaggageMapKey, tp.BaggageData>();
+    // stable var user_data = Map.new<>(tp.);
 
     public func addBaggageData(user_id : Text, value : tp.BaggageData) : async tp.Res<tp.BaggageData, Text> {
         // userId used for authentication and verification
@@ -22,37 +23,41 @@ actor DB {
         var baggageData = Map.get(baggage_data, ut.khash, key);
         switch (baggageData) {
             case (?myDt) {
-                var existing_event = Buffer.fromArray<tp.BaggageEvent>(myDt.event);
+                var existing_event = Buffer.fromArray<tp.BaggageEvent>(myDt.events);
                 existing_event.add(baggagePayload.b_event);
 
                 var newBaggageData : tp.BaggageData = {
                     baggage_id = myDt.baggage_id;
                     owner = myDt.owner;
-                    weight = myDt.weight;
+                    departure = myDt.departure;
                     destination = myDt.destination;
-                    status = baggagePayload.b_status;
-                    event = Buffer.toArray(existing_event);
+                    airline = myDt.airline;
+                    weight = myDt.weight;
+                    dimension = myDt.dimension;
+                    category = myDt.category;
+                    is_fragile = myDt.is_fragile;
+                    events = Buffer.toArray(existing_event);
                 };
+
                 Map.set(baggage_data, ut.khash, key, newBaggageData);
                 return true;
             };
             case null {
-                Debug.print("oops");
                 return false;
             };
         };
 
     };
 
-    public query func getBaggageData(userId: Text, key : tp.BaggageMapKey) : async tp.BaggageData {
+    public query func getBaggageData(userId: Text, key : tp.BaggageMapKey) : async tp.Res<tp.BaggageData, Text> {
         // check if the userId is the owner of the baggage
         var baggageData = Map.get(baggage_data, ut.khash, key);
         switch (baggageData) {
             case (?myDt) {
-                return myDt;
+                return #ok(myDt);
             };
             case null {
-                return ut.NullBaggage;
+                return #err("Failed to get baggage data.");
             }
         };
     };

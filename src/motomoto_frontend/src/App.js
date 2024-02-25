@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { pubsub } from "../../declarations/pubsub";
 import { db } from "../../declarations/db";
+import { Principal } from '@dfinity/principal';
 
 function App() {
   const userID = "be";
@@ -9,11 +10,16 @@ function App() {
   const [displayBaggage, setDisplayBaggage] = useState(false);
   const [rerender, setRerender] = useState(false);
 
+  function callback(principal, str) {
+    // Your callback logic here
+    console.log("Callback called with principal:", principal, "and string:", str);
+}
+
   const subscribe = async () => {
-    pubsub.init(baggageId, userID).then(() => {
+    pubsub.init(userID, baggageId).then(() => {
       setRerender(!rerender);
       console.log("subscribed");
-    })
+    });
   }
 
   useEffect(() => {
