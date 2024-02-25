@@ -1,22 +1,17 @@
 {
   "canisters": {
-    "testing": {
-      "main": "src/motomoto_backend/main.mo",
-      "type": "motoko"
-    },
-    "pub": {
+    "pubsub": {
       "type": "motoko",
-      "main": "src/motomoto_backend/pub/main.mo"
+      "main": "src/motomoto_backend/pubsub/main.mo"
     },
-    "sub": {
+    "db": {
       "type": "motoko",
-      "main": "src/motomoto_backend/sub/main.mo"
+      "main": "src/motomoto_backend/db/main.mo"
     },
     "motomoto_frontend": {
       "dependencies": [
-        "testing",
-        "pub",
-        "sub"
+        "pubsub",
+        "db"
       ],
       "frontend": {
         "entrypoint": "src/omnia_main_frontend/build/index.html"

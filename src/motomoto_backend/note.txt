@@ -1,0 +1,28 @@
+1. Airport staff = addBaggageData(...)
+   - baggage_id 
+   - owner = user_id
+   ...
+   TODO : add phone number 
+
+2. User = init(baggage_id, user_id)
+
+   User can subscribe to many baggage_id s 
+   (as long as they're the owner of the baggage)
+
+3. User = getSubscribedBag(user_id)
+   
+   Key     | List<>
+   --------+-------------------
+   user_id | [b1, b2, b3, ...]
+   
+4. Airpot = publish(...)
+
+   The "airport" update the baggage status
+   triggering the callback function which is the updateFunction
+
+5. User = getBaggageData(baggage_id)
+
+   // TODO : add user_id param to authenticate the user_id
+   it's polling the API :'''') maybe every 10 seconds?
+
+6. 

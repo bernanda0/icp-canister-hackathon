@@ -1,78 +1,88 @@
 import React, { useEffect, useState } from 'react';
-import { testing } from "../../declarations/testing"
-import { sub } from "../../declarations/sub"
+import { pubsub } from "../../declarations/pubsub";
+import { db } from "../../declarations/db";
 
 function App() {
-  const [counter, setCounter] = useState('');
-  const [name, setName] = useState('');
-  const [greeting, setGreeting] = useState('');
-  const [msg, setMsg] = useState('');
-  const topic = "bag";
+  const userID = "be";
+  const [baggageList, setBaggageList] = useState([]);
+  const [baggageId, setBaggageId] = useState("");
+  const [displayBaggage, setDisplayBaggage] = useState(false);
+  const [rerender, setRerender] = useState(false);
+
+  const subscribe = async () => {
+    pubsub.init(baggageId, userID).then(() => {
+      setRerender(!rerender);
+      console.log("subscribed");
+    })
+  }
 
   useEffect(() => {
-    const getInitialValue = async () => {
-      const initValue = await testing.getValue();
-      setCounter(String(initValue));
+    const getBaggageList = async () => {
+      pubsub.getSubscribedBag(userID).then((baggageLs) => {
+        setBaggageList(baggageLs);
+      })
     }
 
-    const subscribe = async () => {
-      sub.init(topic, "xw1").then( () => {
-        console.log("subscribed to bag");
-      }).catch( (err) => { 
-        console.log("error: ", err);
-        setMsg("error");
-      });
-      // I need to call the callback everytime there's data changing
-    }
+    getBaggageList();
+  }, [rerender])
 
-    getInitialValue()
-    subscribe()
-  }, [])
-
-
-
-  useEffect(() => {
-    const getTopicMessage = async () => {
-      sub.getMessage(topic).then( (data) => {
-        setMsg(data.value);
-      }).catch( (err) => { 
-        console.log("error: ", err);
-        setMsg("error");
-      });
-    }
-
-    // call getBagCount() every 2 seconds
-    const interval = setInterval(getTopicMessage, 5000);
-    return () => clearInterval(interval);
-
-  }, [msg])
-
-  const incrementCounter = async () => {
-    const newValue = await testing.inc();
-    setCounter(String(newValue));
-  };
-
-  const greetUser = async () => {
-    const message = await testing.greet(name);
-    setGreeting(message);
-  };
 
   return (
     <div>
       <h1>Internet Computer (IC) Demo</h1>
       <div>
-        <h2>Message: {msg}</h2>
-        <h2>Counter Value: {counter}</h2>
-        <button onClick={incrementCounter}>Increment Counter</button>
-      </div>
-      <div>
-        <h2>Greet User</h2>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-        <button onClick={greetUser}>Greet</button>
-        <p>{greeting}</p>
+        <h2>User ID: {userID}</h2>
+        {/* input baggage id to subscribe to updates for that baggage id*/}
+        <input type="text" onChange={(e) => setBaggageId(e.target.value)} />
+        <button onClick={subscribe}>Sub</button>
+        <h2>Baggage List: </h2>
+        <ul>
+          {/*baggage list is array of string */}
+          {baggageList.map((bid) => {
+            return <li key={bid} onClick={() => { setBaggageId(bid); setDisplayBaggage(true) }}>{bid}</li>
+          })}
+        </ul>
+        <hr />
+        {displayBaggage ? <BaggageData userId={userID} baggageId={baggageId} /> : <div>No baggage selected</div>}
       </div>
     </div>
   );
 }
+
+function BaggageData({ userId, baggageId }) {
+  const [baggageData, setBaggageData] = useState({});
+
+  useEffect(() => {
+    const getBaggageData = async () => {
+      db.getBaggageData(userId, { baggage_id: baggageId }).then((baggageData) => {
+        console.log(baggageData);
+        setBaggageData(baggageData);
+      })
+    }
+
+    // call getBaggageData every x secs
+    setInterval(() => { getBaggageData() }, 10000);
+
+  }, [userId, baggageId])
+
+  return <div>
+    <h2>Polling Baggage Data </h2>
+    <h3>Owner: {baggageData.owner}</h3>
+    <h3>Baggage ID: {baggageData.baggage_id}</h3>
+    <h3>Weight: {String(baggageData.weight)}</h3>
+    <h3>Destination: {baggageData.destination}</h3>
+    <h3>Status: {baggageData.status ? Object.keys(baggageData.status)[0] : 'N/A'}</h3>
+    <h3>Events:</h3>
+      <ul>
+        {baggageData.event && baggageData.event.map((eventData, index) => (
+          <li key={index}>
+            <p>Event: {eventData.event}</p>
+            <p>Timestamp: {String(eventData.timestamp)}</p>
+          </li>
+        ))}
+      </ul>
+  </div>
+}
+
 
 export default App;
