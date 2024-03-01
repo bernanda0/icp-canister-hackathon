@@ -6,7 +6,8 @@ import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
 
 // DIBUAT ENV AJA INI, ANONYMOUS
-const anonII = "2vxsx-fae"
+const anonII = process.env.ANON_II
+const tatumAPIKey = process.env.TATUM_API_KEY
 
 function App() {
   const [userID, setUserID] = useState(anonII);
@@ -15,8 +16,69 @@ function App() {
   const [displayBaggage, setDisplayBaggage] = useState(false);
   const [rerender, setRerender] = useState(false);
   const [isValidUser, setValidUser] = useState(false);
+  const [loginInfo, setLoginInfo] = useState("");
   const [fillPassword, setFillPassword] = useState("");
   const [password, setPassword] = useState("");
+  const [image, setImage] = useState(null);
+  const [CID, setCID] = useState("");
+  const [imageUrl, setImageUrl] = useState('');
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+  };
+
+  const handleUpload = async () => {
+    if (!image) {
+
+      alert('Please select an image to upload');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', image);
+
+    try {
+      const response = await fetch('https://api.tatum.io/v3/ipfs', {
+        method: 'POST',
+        headers: {
+          'x-api-key': tatumAPIKey // Replace <mykey> with your API key
+        },
+        body: formData
+      });
+
+      const data = await response.text();
+      console.log('IPFS Response:', data);
+
+      if (response.ok) {
+        setCID(JSON.parse(data).ipfsHash)
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
+  const handleFetchImage = async () => {
+    try {
+      const response = await fetch(`https://api.tatum.io/v3/ipfs/${CID}`, {
+        method: 'GET',
+        headers: {
+          'x-api-key': tatumAPIKey
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch image');
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setImageUrl(url);
+    } catch (error) {
+      console.error('Error fetching image:', error);
+    }
+  };
+
 
   const subscribe = async () => {
     pubsub.init(userID, baggageId).then(() => {
@@ -50,7 +112,7 @@ function App() {
     });
     const identity = authClient.getIdentity();
     const agent = new HttpAgent({ identity });
-    actor = createActor("bw4dl-smaaa-aaaaa-qaacq-cai", {
+    actor = createActor("bkyz2-fmaaa-aaaaa-qaaaq-cai", {
       agent,
     });
 
@@ -78,9 +140,20 @@ function App() {
 
   const continueLogin = async (e) => {
     e.preventDefault();
+    setLoginInfo("");
     await auth.login(userID, password).then((res) => {
-      setValidUser(true);
-      setFillPassword("done");
+      console.log(res);
+      // the response if error is {err: 'Incorrect password'}
+      if (res.err) {
+        setLoginInfo("Incorrect password");
+        setValidUser(false);
+        setFillPassword("continue");
+      } else {
+        setValidUser(true);
+        setLoginInfo("Login Success");
+        setFillPassword("done");
+      }
+
     });
   };
 
@@ -94,22 +167,36 @@ function App() {
   return (
     <div>
       <h1>Internet Computer (IC) Demo</h1>
-      <form>
-        <button id="login" onClick={login}>Login!</button>
-      </form>
+      <div>
+        <h2>Image Uploader</h2>
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <button onClick={handleUpload}>Upload Image</button>
+        <h3>CID : {CID}</h3>
+        <button onClick={handleFetchImage}>Fetch Image</button>
+        {imageUrl && (
+          <div>
+            <h3>Image Preview</h3>
+            <img src={imageUrl} alt="wkwk" style={{ maxWidth: '25%' }} />
+          </div>
+        )}
+      </div>
       <br />
       <div>
+        <form>
+          <button id="login" onClick={login}>Login!</button>
+        </form>
         <h2>User ID: {userID}</h2>
-        <h2>Valid User : {isValidUser ? "TRUE" : "FALSE"}</h2>
+        <h2>Authenticated : {isValidUser ? "TRUE" : "FALSE"}</h2>
+        <h2>{loginInfo}</h2>
         {fillPassword === "continue" ? (
           <div>
-            <h2>Continue</h2>
+            <h3>Fill Password</h3>
             <input type="text" onChange={(e) => setPassword(e.target.value)} />
             <button onClick={continueLogin}>Continue</button>
           </div>
         ) : fillPassword === "register" ? (
           <div>
-            <h2>Continue fill password</h2>
+            <h3>Create Password</h3>
             <input type="text" onChange={(e) => setPassword(e.target.value)} />
             <button onClick={registerUser}>Create Password</button>
           </div>

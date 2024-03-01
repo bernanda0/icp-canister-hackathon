@@ -53,10 +53,14 @@ module {
         status : BaggageStatus;
         description : Text;
         timestamp : Time.Time;
-        photo : Text;
+        photo : Photo;
         location : Airport;
     };
 
+    type Photo = {
+        cid : Text;
+    };
+    
     type Airport = {
         code : Text;
         name : Text;
