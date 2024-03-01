@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { pubsub } from "../../declarations/pubsub";
-import { db } from "../../declarations/db";
-import { auth, createActor } from "../../declarations/auth";
+import { be, createActor } from "../../declarations/be";
 import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
 
@@ -81,7 +79,7 @@ function App() {
 
 
   const subscribe = async () => {
-    pubsub.init(userID, baggageId).then(() => {
+    be.init(userID, baggageId).then(() => {
       setRerender(!rerender);
       console.log("subscribed");
     });
@@ -89,7 +87,7 @@ function App() {
 
   useEffect(() => {
     const getBaggageList = async () => {
-      pubsub.getSubscribedBag(userID).then((baggageLs) => {
+      be.getSubscribedBag(userID).then((baggageLs) => {
         setBaggageList(baggageLs);
       })
     }
@@ -98,7 +96,7 @@ function App() {
   }, [userID, rerender])
 
   const getInternetId = async () => {
-    var actor = auth;
+    var actor = be;
     let authClient = await AuthClient.create();
     await new Promise((resolve) => {
       authClient.login({
@@ -112,7 +110,7 @@ function App() {
     });
     const identity = authClient.getIdentity();
     const agent = new HttpAgent({ identity });
-    actor = createActor("bkyz2-fmaaa-aaaaa-qaaaq-cai", {
+    actor = createActor("b77ix-eeaaa-aaaaa-qaada-cai", {
       agent,
     });
 
@@ -126,7 +124,7 @@ function App() {
     e.preventDefault();
     var iid = await getInternetId();
     setUserID(iid);
-    auth.isUser(iid).then((res) => {
+    be.isUser(iid).then((res) => {
       if (res) {
         setFillPassword("continue");
       } else {
@@ -141,7 +139,7 @@ function App() {
   const continueLogin = async (e) => {
     e.preventDefault();
     setLoginInfo("");
-    await auth.login(userID, password).then((res) => {
+    await be.login(userID, password).then((res) => {
       console.log(res);
       // the response if error is {err: 'Incorrect password'}
       if (res.err) {
@@ -159,7 +157,7 @@ function App() {
 
   const registerUser = async (e) => {
     e.preventDefault();
-    await auth.addPassword(userID, password).then((res) => {
+    await be.addPassword(userID, password).then((res) => {
       setFillPassword("continue");
     });
   }
