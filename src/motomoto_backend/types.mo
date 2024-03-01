@@ -5,6 +5,7 @@ import Bool "mo:base/Bool";
 import Float "mo:base/Float";
 import Principal "mo:base/Principal";
 import Hash "mo:base/Hash";
+import Text "mo:base/Text";
 
 module {
     public type UserData = {
@@ -27,8 +28,14 @@ module {
     // public type SessionId = Principal.Principal;
 
     public type Session = {
+        user_id : Text;
         created_at : Time.Time;
         expired_at : Time.Time;
+    };
+
+    public type IsAuthRespose = {
+        valid : Bool;
+        user_id : Text;
     };
 
     public let OneDay = 86400000000000;

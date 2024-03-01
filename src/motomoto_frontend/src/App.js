@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { be, createActor } from "../../declarations/be";
 import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
+import { useCookies } from 'react-cookie';
 
 // DIBUAT ENV AJA INI, ANONYMOUS
-const anonII = process.env.ANON_II
-const tatumAPIKey = process.env.TATUM_API_KEY
+const anonII = process.env.ANON_II || ''
+const tatumAPIKey = process.env.TATUM_API_KEY || ''
+const canisterID = process.env.CANISTER_ID_BE || 'b77ix-eeaaa-aaaaa-qaada-cai'
 
 function App() {
   const [userID, setUserID] = useState(anonII);
@@ -20,6 +22,7 @@ function App() {
   const [image, setImage] = useState(null);
   const [CID, setCID] = useState("");
   const [imageUrl, setImageUrl] = useState('');
+  const [cookies, setCookies] = useCookies(['sess_id'])
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -95,6 +98,24 @@ function App() {
     getBaggageList();
   }, [userID, rerender])
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const sessionId = cookies['sess_id'];
+      if (sessionId) {
+        const res = await be.isAuth(sessionId);
+        if (res.valid) {
+          setUserID(res.user_id)
+          setValidUser(true)
+        } else {
+          setUserID("Anon")
+          setValidUser(false)
+        }
+      }
+    }
+
+    checkSession();
+  }, [cookies])
+
   const getInternetId = async () => {
     var actor = be;
     let authClient = await AuthClient.create();
@@ -110,7 +131,7 @@ function App() {
     });
     const identity = authClient.getIdentity();
     const agent = new HttpAgent({ identity });
-    actor = createActor("b77ix-eeaaa-aaaaa-qaada-cai", {
+    actor = createActor(canisterID, {
       agent,
     });
 
@@ -147,7 +168,8 @@ function App() {
         setValidUser(false);
         setFillPassword("continue");
       } else {
-        setValidUser(true);
+        console.log(res.ok)
+        setCookies('sess_id', res.ok);
         setLoginInfo("Login Success");
         setFillPassword("done");
       }

@@ -8,6 +8,9 @@ import Principal "mo:base/Principal";
 import Time "mo:base/Time";
 import Hash "mo:base/Hash";
 import List "mo:base/List";
+import Text "mo:base/Text";
+import Source "mo:uuid/async/SourceV4";
+import UUID "mo:uuid/UUID";
 
 actor BE {
     // DATABASE DEFINITION
@@ -16,7 +19,7 @@ actor BE {
 
     // 2. For user
     stable var user_data = Map.new<Principal.Principal, tp.UserData>();
-    stable var session = Map.new<Principal.Principal, tp.Session>();
+    stable var session = Map.new<Text, tp.Session>();
 
     // 3. For pubsub
     stable var subscribers = Map.new<Text, tp.Ls<tp.BaggageReference>>();
@@ -94,22 +97,25 @@ actor BE {
     public shared (msg) func whoami() : async Principal {
         msg.caller;
     };
-    public query func isAuth(userId : Text) : async Bool {
-        var p = Principal.fromText(userId);
-        var isUser = Map.has(user_data, Map.phash, p);
-        if (not isUser) {
-            return false;
-        };
-        var sess = Map.get(session, Map.phash, p);
+    public query func isAuth(session_id : Text) : async tp.IsAuthRespose {
+        var sess = Map.get(session, Map.thash, session_id);
+        var isValid = false;
+        var userId = "";
         switch (sess) {
             case (?s) {
                 var isNotExpired = Time.now() < s.expired_at;
-                return isNotExpired;
+                if (isNotExpired) {
+                    isValid := true;
+                    userId := s.user_id;
+                };
             };
-            case (null) {
-                return false;
-            };
+            case(null){};
         };
+        let res : tp.IsAuthRespose = {
+            valid = isValid;
+            user_id = userId;
+        };
+        return res;
     };
     public query func isUser(userId : Text) : async Bool {
         var p = Principal.fromText(userId);
@@ -127,24 +133,27 @@ actor BE {
                 };
 
                 var new_session : tp.Session = {
+                    user_id = userId;
                     created_at = Time.now();
                     expired_at = Time.now() + tp.OneDay; // 7 days
                 };
 
-                Map.set(session, Map.phash, p, new_session);
-                return #ok("Session created");
+                let g = Source.Source();
+                var new_session_id = UUID.toText(await g.new());
+
+                Map.set(session, Map.thash, new_session_id, new_session);
+                return #ok(new_session_id);
             };
             case (null) {
                 return #err("Password not created");
             };
         };
     };
-    public func logout(userId : Text) : async tp.Res<Text, Text> {
-        var p = Principal.fromText(userId);
-        var sess = Map.get(session, Map.phash, p);
+    public func logout(session_id : Text) : async tp.Res<Text, Text> {
+        var sess = Map.get(session, Map.thash, session_id);
         switch (sess) {
             case (?s) {
-                Map.delete(session, Map.phash, p);
+                Map.delete(session, Map.thash, session_id);
                 return #ok("Session deleted");
             };
             case (null) {
@@ -227,12 +236,12 @@ actor BE {
         };
     };
 
-    public func init(userId : Text, baggageId : Text) {
-        var ok = await isAuth(userId);
-        if (not ok) {
+    public func init(session_id : Text, baggageId : Text) {
+        var res = await isAuth(session_id);
+        if (not res.valid) {
             return ();
         };
-
+        let userId = res.user_id;
         var ok2 = await getBaggageData(userId, { baggage_id = baggageId });
         switch (ok2) {
             case (#ok(data)) {
