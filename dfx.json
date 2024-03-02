@@ -1,16 +1,8 @@
 {
   "canisters": {
-    "auth": {
+    "be": {
       "type": "motoko",
-      "main": "src/motomoto_backend/auth/main.mo"
-    },
-    "pubsub": {
-      "type": "motoko",
-      "main": "src/motomoto_backend/pubsub/main.mo"
-    },
-    "db": {
-      "type": "motoko",
-      "main": "src/motomoto_backend/db/main.mo"
+      "main": "src/motomoto_backend/services/main.mo"
     },
     "internet_identity" : {
       "type": "pull",
@@ -18,12 +10,10 @@
     },
     "motomoto_frontend": {
       "dependencies": [
-        "auth",
-        "pubsub",
-        "db"
+        "be"
       ],
       "frontend": {
-        "entrypoint": "src/omnia_main_frontend/build/index.html"
+        "entrypoint": "src/motomoto_frontend/build/index.html"
       },
       "source": [
         "src/motomoto_frontend/build"

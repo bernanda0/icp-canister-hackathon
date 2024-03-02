@@ -39,6 +39,7 @@
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {}
 	},
+	"postCreateCommand": "npm i -g ic-mops",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [4963, 8080, 80, 3000, 5173]

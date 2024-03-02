@@ -12,7 +12,7 @@ module {
         user_id : Principal.Principal;
         hashed_password : Hash.Hash;
         is_admin : Bool;
-        wallet: Wallet;
+        wallet : Wallet;
     };
 
     type Wallet = {
@@ -54,6 +54,16 @@ module {
         events : [BaggageEvent];
     };
 
+    public type BaggageDataSummary = {
+        baggage_id : Text;
+        departure_code : Text;
+        destination_code : Text;
+        last_events : {
+            status : BaggageStatus;
+            description : Text;
+        };
+    };
+
     public type BaggageStatus = { #CheckIn; #InTransit; #Delivered; #Lost };
 
     public type BaggageEvent = {
@@ -67,7 +77,7 @@ module {
     type Photo = {
         cid : Text;
     };
-    
+
     type Airport = {
         code : Text;
         name : Text;

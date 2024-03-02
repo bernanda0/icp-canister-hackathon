@@ -263,7 +263,7 @@ actor BE {
         let subscribed_baggages = Map.get(subscribers, Map.thash, userId);
         switch (subscribed_baggages) {
             case (?cry) {
-                var buffer_id = Buffer.Buffer<Text>(3);
+                var buffer_id = Buffer.Buffer<Text>(1);
 
                 for (bRef in List.toIter(cry)) {
                     buffer_id.add(bRef.baggage_id);
