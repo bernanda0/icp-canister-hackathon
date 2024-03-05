@@ -78,7 +78,7 @@ module {
         cid : Text;
     };
 
-    type Airport = {
+    public type Airport = {
         code : Text;
         name : Text;
     };

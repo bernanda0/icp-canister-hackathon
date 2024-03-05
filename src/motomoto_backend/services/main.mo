@@ -28,7 +28,11 @@ actor BE {
     // Exposed function or query
     // 1. For baggage
     public func addBaggageData(user_id : Text, value : tp.BaggageData) : async tp.Res<tp.BaggageData, Text> {
-        // userId used for authentication and verification
+        var res = await isUser(user_id);
+        if (not res) {
+            return #err("Not valid user");
+        };
+
         var key : tp.BaggageMapKey = { baggage_id = value.baggage_id };
         Map.set(baggage_data, ut.khash, key, value);
         if (Map.has(baggage_data, ut.khash, key)) {
@@ -36,6 +40,7 @@ actor BE {
         };
         return #err("Failed to add baggage data");
     };
+
     public shared func updateBaggageEvent(key : tp.BaggageMapKey, baggagePayload : tp.UpdatePayload) : async Bool {
         var baggageData = Map.get(baggage_data, ut.khash, key);
         switch (baggageData) {
@@ -66,7 +71,6 @@ actor BE {
 
     };
     public query func getBaggageData(userId : Text, key : tp.BaggageMapKey) : async tp.Res<tp.BaggageData, Text> {
-        // check if the userId is the owner of the baggage
         var baggageData = Map.get(baggage_data, ut.khash, key);
         switch (baggageData) {
             case (?myDt) {
@@ -109,7 +113,7 @@ actor BE {
                     userId := s.user_id;
                 };
             };
-            case(null){};
+            case (null) {};
         };
         let res : tp.IsAuthRespose = {
             valid = isValid;
@@ -236,12 +240,12 @@ actor BE {
         };
     };
 
-    public func init(session_id : Text, baggageId : Text) {
-        var res = await isAuth(session_id);
-        if (not res.valid) {
+    public func init(userId : Text, baggageId : Text) {
+        var res = await isUser(userId);
+        if (not res) {
             return ();
         };
-        let userId = res.user_id;
+
         var ok2 = await getBaggageData(userId, { baggage_id = baggageId });
         switch (ok2) {
             case (#ok(data)) {
@@ -259,14 +263,28 @@ actor BE {
         };
     };
 
-    public shared query func getSubscribedBag(userId : Text) : async [Text] {
+    public shared query func getSubscribedBag(userId : Text) : async [tp.BaggageDataSummary] {
         let subscribed_baggages = Map.get(subscribers, Map.thash, userId);
         switch (subscribed_baggages) {
             case (?cry) {
-                var buffer_id = Buffer.Buffer<Text>(1);
+                var buffer_id = Buffer.Buffer<tp.BaggageDataSummary>(1);
 
                 for (bRef in List.toIter(cry)) {
-                    buffer_id.add(bRef.baggage_id);
+                    var b = Map.get(baggage_data, ut.khash, { baggage_id = bRef.baggage_id });
+                    switch (b) {
+                        case (?b) {
+                            buffer_id.add({
+                                baggage_id = b.baggage_id;
+                                departure_code = b.departure.code;
+                                destination_code = b.destination.code;
+                                last_events = {
+                                    status = b.events[b.events.size() - 1].status;
+                                    description = b.events[b.events.size() - 1].description;
+                                };
+                            });
+                        };
+                        case (null) {};
+                    };
                 };
 
                 return Buffer.toArray(buffer_id);
